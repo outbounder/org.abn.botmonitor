@@ -1,11 +1,11 @@
 ﻿package org.abn.botmonitor.operation;
 
+import neko.vm.Thread;
 import util.Timer;
 import jabber.client.Roster;
 import jabber.Ping;
 import jabber.XMPPError;
 import org.abn.bot.operation.BotOperation;
-import org.abn.bot.operation.BotOperationListener;
 import org.abn.neko.xmpp.XMPPContext;
 import org.abn.botmonitor.Main;
 import org.abn.botmonitor.BotMonitorOperationFactory;
@@ -14,31 +14,32 @@ import xmpp.Message;
 
 class Start extends BotOperation
 {		
+	private var thread:Thread;
+	
 	public override function execute(params:Hash<String>):String
 	{
 		if (this.botContext.has("started"))
 			return "already started";
 			
-		var xmppContext:XMPPContext = this.botContext.getXMPPContext();
-		xmppContext.openConnection(true, onConnected, onDisconnected, onConnectFailed);
+		this.botContext.openXMPPConnection(onConnected, onConnectFailed, onDisconnected);
 		
 		Web.cacheModule(Main.handleRequests);
 		this.botContext.set("started", true);
-		return "done";
+		this.thread = Thread.current();
+		return Thread.readMessage(true);
 	}
 	
 	private function onConnectFailed(reason:Dynamic):Void
 	{
 		this.botContext.set("started", null);
-		trace("xmpp connect failed "+reason);
+		trace("xmpp connect failed " + reason);
+		this.thread.sendMessage("xmpp connection failed:"+reason);
 	}
 	
 	private function onConnected():Void
-	{
-		var operationListener:BotOperationListener = new BotOperationListener(this.botContext); // TODO this should be in BotContext
-		this.botContext.set("operationListener", operationListener);
-		
+	{		
 		trace("botmonitor connected");
+		this.thread.sendMessage("done");
 	}
 	
 	private function onDisconnected():Void
@@ -46,8 +47,7 @@ class Start extends BotOperation
 		if (this.botContext.has("started"))
 		{
 			trace("trying to reconnect...");
-			var xmppContext:XMPPContext = this.botContext.getXMPPContext();
-			xmppContext.openConnection(false, onConnected, onDisconnected);
+			this.botContext.openXMPPConnection(onConnected, onConnectFailed, onDisconnected);
 		}
 	}
 }
