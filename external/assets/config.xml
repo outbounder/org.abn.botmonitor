@@ -1,20 +1,14 @@
 <context>
 	<operations>
 		<start>
-			<path>org.abn.userstorage.operation.Start</path>
+			<path>org.abn.botmonitor.operation.Start</path>
 		</start>
 		<kill>
-			<path>org.abn.userstorage.operation.Stop</path>
+			<path>org.abn.botmonitor.operation.Stop</path>
 		</kill>
-		<getUserId>
-			<path>org.abn.userstorage.operation.GetUserId</path>
-		</getUserId>
-		<set>
-			<path>org.abn.userstorage.operation.Set</path>
-		</set>
-		<get>
-			<path>org.abn.userstorage.operation.Get</path>
-		</get>
+		<checkStatus>
+			<path>org.abn.botmonitor.operation.CheckStatus</path>
+		</checkStatus>
 	</operations>
 	<xmpp>
 		<username></username>

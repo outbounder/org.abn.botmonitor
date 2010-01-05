@@ -1,5 +1,6 @@
 ﻿package org.abn.botmonitor.operation;
 
+import util.Timer;
 import jabber.client.Roster;
 import jabber.Ping;
 import jabber.XMPPError;
@@ -34,18 +35,7 @@ class Start extends BotOperation
 	
 	private function onConnected():Void
 	{
-		this.botContext.getXMPPContext().getConnection().createMessageListener(incomingMessagesHandler, true);
-		
-		var monitorJids:List<Dynamic> = this.botContext.get("monitor.jid");
-		for (jid in monitorJids)
-			this.botContext.getXMPPContext().getConnection().sendMessage(jid, "<statusReport/>");
-		
 		trace("botmonitor connected");
-	}
-	
-	private function incomingMessagesHandler(msg:Message):Void
-	{
-		trace(msg.from + " -> " + msg.body.split("&lt;").join("<").split("&gt;").join(">"));
 	}
 	
 	private function onDisconnected():Void
