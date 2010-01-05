@@ -17,5 +17,6 @@
 	</xmpp>
 	<monitor>
 		<jid></jid>
+		<jid></jid>
 	</monitor>
 </context>
