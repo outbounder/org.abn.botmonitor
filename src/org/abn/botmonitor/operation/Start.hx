@@ -35,6 +35,9 @@ class Start extends BotOperation
 	
 	private function onConnected():Void
 	{
+		var operationListener:BotOperationListener = new BotOperationListener(this.botContext); // TODO this should be in BotContext
+		this.botContext.set("operationListener", operationListener);
+		
 		trace("botmonitor connected");
 	}
 	

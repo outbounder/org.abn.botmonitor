@@ -7,6 +7,7 @@ package org.abn.botmonitor.operation;
 import jabber.MessageListener;
 import neko.vm.Thread;
 import org.abn.bot.operation.BotOperation;
+import org.abn.bot.operation.BotOperationListener;
 import util.Timer;
 import xmpp.Message;
 
@@ -19,7 +20,7 @@ class CheckStatus extends BotOperation
 	private var messageListener:MessageListener;
 	
 	public override function execute(params:Hash<String>):String
-	{
+	{		
 		this.waitingResponsesCount = 0;
 		this.responseBuffer = "";
 		this.messageListener = this.botContext.getXMPPContext().getConnection().createMessageListener(incomingMessagesHandler, true);
@@ -40,8 +41,7 @@ class CheckStatus extends BotOperation
 	
 	private function onTimeout():Void
 	{
-		this.timeoutTimer.stop();
-		this.messageListener.listen = false;
+		this.dispose();
 		this.httpThread.sendMessage("<timeoutResponse>" + responseBuffer + "</timeoutResponse>");
 	}
 	
@@ -53,10 +53,15 @@ class CheckStatus extends BotOperation
 		
 		if (waitingResponsesCount <= 0)
 		{
-			this.timeoutTimer.stop();
-			this.messageListener.listen = false;
+			this.dispose();
 			this.httpThread.sendMessage("<response>" + responseBuffer + "</response>");
 		}
+	}
+	
+	private function dispose():Void
+	{
+		this.timeoutTimer.stop();
+		this.messageListener.listen = false;
 	}
 	
 }
