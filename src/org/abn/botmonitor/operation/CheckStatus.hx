@@ -14,52 +14,49 @@ class CheckStatus extends BotOperation
 {
     private var waitingResponsesCount:Int;
 	private var responseBuffer:String;
-	private var httpThread:Thread;
-	private var timeoutTimer:Timer;
+	private var thread:Thread;
 	
 	public override function execute(params:Hash<String>):String
 	{		
 		this.waitingResponsesCount = 0;
 		this.responseBuffer = "";
+		this.thread = Thread.current();
 		
 		var monitorJids:List<Dynamic> = this.botContext.get("monitor.jid");
 		for (jid in monitorJids)
 		{
 			this.waitingResponsesCount += 1;
-			this.botContext.getXMPPContext().sendMessage(jid, "<statusReport/>", statusReportHandler);
+			this.botContext.getXMPPContext().sendMessage(jid, "<statusReport/>", statusReportHandler, timeoutHandler);
 		}
-		
-		this.httpThread = Thread.current();
-		this.timeoutTimer = new Timer(5000);
-		this.timeoutTimer.run = onTimeout;
 		
 		return Thread.readMessage(true);
 	}
 	
-	private function onTimeout():Void
+	private function timeoutHandler(from:String):Void
 	{
-		this.dispose("timeoutResponse");
+		var response:String = "<timeout><from>"+from+"</from></timeout>";
+		responseBuffer += response;
+		
+		this.waitingResponsesCount -= 1;
+		if (waitingResponsesCount <= 0)
+			this.dispose("response");
 	}
 	
 	private function statusReportHandler(from:String, msg:String):Void
 	{
 		var response:String = "<report><from>"+from+"</from><status>"+msg.split("&lt;").join("<").split("&gt;").join(">")+"</status></report>";
 		responseBuffer += response;
-		this.waitingResponsesCount -= 1;
 		
+		this.waitingResponsesCount -= 1;
 		if (waitingResponsesCount <= 0)
 			this.dispose("response");
 	}
 	
 	private function dispose(reason:String):Void
 	{
-		if(this.timeoutTimer != null)
-			this.timeoutTimer.stop();
-		this.timeoutTimer = null;
-		
-		if(this.httpThread != null)
-			this.httpThread.sendMessage("<"+reason+">" + responseBuffer + "</"+reason+">");
-		this.httpThread = null;
+		if(this.thread != null)
+			this.thread.sendMessage("<"+reason+">" + responseBuffer + "</"+reason+">");
+		this.thread = null;
 	}
 	
 }
