@@ -2,6 +2,7 @@
 
 import neko.Web;
 import org.abn.bot.operation.BotOperation;
+import org.abn.uberTora.UberToraContext;
 
 class Stop extends BotOperation
 {
@@ -13,7 +14,7 @@ class Stop extends BotOperation
 		this.botContext.set("started", null);
 		this.botContext.closeXMPPConnection();
 		
-		Web.cacheModule(null);
+		UberToraContext.redirectRequests(null);
 		return "done";
 	}
 }

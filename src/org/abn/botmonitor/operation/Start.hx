@@ -1,6 +1,7 @@
 ﻿package org.abn.botmonitor.operation;
 
 import neko.vm.Thread;
+import org.abn.uberTora.UberToraContext;
 import util.Timer;
 import jabber.client.Roster;
 import jabber.Ping;
@@ -21,11 +22,13 @@ class Start extends BotOperation
 		if (this.botContext.has("started"))
 			return "already started";
 			
+		this.thread = Thread.current();
+			
 		this.botContext.openXMPPConnection(onConnected, onConnectFailed, onDisconnected);
 		
-		Web.cacheModule(Main.handleRequests);
+		//Web.cacheModule(Main.handleRequests);
+		UberToraContext.redirectRequests(Main.handleRequests);
 		this.botContext.set("started", true);
-		this.thread = Thread.current();
 		return Thread.readMessage(true);
 	}
 	
